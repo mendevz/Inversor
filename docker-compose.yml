@@ -1,0 +1,68 @@
+services:
+    # ==============================
+    # DataBase PostgreSQL
+    # ==============================
+    inversor-db:
+        image: postgres:15-alpine
+        container_name: inversor_db
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_DB: inversor_db
+        ports:
+            - "5432:5432" 
+        volumes:
+            - inversor_pgdata:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d inversor_db"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - inversor-network
+
+    # ==============================
+    # Inversor Migrator
+    # ==============================
+    inversor-migrator:
+      container_name: inversor_migrator
+      build:
+        context: .
+        dockerfile: src/Inversor.Api/Dockerfile
+      environment:
+        - ConnectionStrings__DefaultConnection=Host=inversor-db;Port=5432;Database=inversor_db;Username=${DB_USER};Password=${DB_PASSWORD}
+      command: ["dotnet", "Inversor.Api.dll", "--only-migrate"]
+      depends_on:
+        inversor-db:
+            condition: service_healthy
+      networks:
+          - inversor-network
+            
+    # ==============================
+    # WEB API
+    # ==============================
+    inversor-api:
+        container_name: inversor_api
+        build:
+          context: . 
+          dockerfile: src/Inversor.Api/Dockerfile 
+        ports:
+          - "5001:8080"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT} 
+            - ConnectionStrings__DefaultConnection=Host=inversor-db;Port=5432;Database=inversor_db;Username=${DB_USER};Password=${DB_PASSWORD}
+        depends_on:
+            inversor-db:
+              condition: service_healthy
+            inversor-migrator:
+              condition: service_completed_successfully
+        networks:
+          - inversor-network
+            
+volumes:
+    inversor_pgdata:
+    
+networks:
+  inversor-network:
+    driver: bridge

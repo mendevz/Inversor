@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+  <Project Path="src/Inversor.Api/Inversor.Api.csproj" />
+  <Project Path="src/Inversor.Core/Inversor.Core.csproj" />
+  <Project Path="src/Inversor.Infrastructure/Inversor.Infrastructure.csproj" />
+</Solution>

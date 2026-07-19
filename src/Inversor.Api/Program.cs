@@ -1,4 +1,5 @@
 using Inversor.Api.Extensions;
+using Inversor.Api.Middlewares;
 using Inversor.Core;
 using Inversor.Infrastructure;
 
@@ -8,6 +9,9 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddOpenApi();
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 

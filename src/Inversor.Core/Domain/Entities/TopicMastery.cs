@@ -19,27 +19,22 @@ public class TopicMastery
 
     public static TopicMastery Create(
             Guid userLanguageId,
-            Guid grammarTopicId,
-            decimal masteryScore,
-            int totalAttempts,
-            DateTime nextReviewDate
+            Guid grammarTopicId
         )
     {
         if (userLanguageId == Guid.Empty) throw new ArgumentException("UserLanguage ID cannot be empty", nameof(userLanguageId));
         if (grammarTopicId == Guid.Empty) throw new ArgumentException("GrammarTopic ID cannot be empty", nameof(grammarTopicId));
-        if (masteryScore < 0 || masteryScore > 1) throw new ArgumentOutOfRangeException(nameof(masteryScore), "Mastery score must be between 0 and 1");
-        if (totalAttempts < 0) throw new ArgumentOutOfRangeException(nameof(totalAttempts), "Total attempts cannot be negative");
         var topicMastery = new TopicMastery
         {
             Id = Guid.NewGuid(),
             UserLanguageId = userLanguageId,
             GrammarTopicId = grammarTopicId,
-            MasteryScore = masteryScore,
-            TotalAttempts = totalAttempts,
+            MasteryScore = 0.0m,
+            TotalAttempts = 0,
             ConsecutiveSuccesses = 0,
             CurrentIntervalDays = 1,
-            EasinessFactor = 2.5m, // El estándar base de SuperMemo-2
-            NextReviewDate = nextReviewDate
+            EasinessFactor = 2.5m, 
+            NextReviewDate = DateTime.UtcNow.AddDays(1)
         };
         return topicMastery;
     }

@@ -1,3 +1,4 @@
+using Inversor.Api.Endpoints;
 using Inversor.Api.Extensions;
 using Inversor.Api.Middlewares;
 using Inversor.Core;
@@ -31,6 +32,8 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty;
     });
 }
+
+app.MapEvaluationEndpoints();
 
 app.UseHttpsRedirection();
 

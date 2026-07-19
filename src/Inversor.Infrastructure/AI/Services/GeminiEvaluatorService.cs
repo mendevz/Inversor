@@ -24,7 +24,8 @@ public class GeminiEvaluatorService(
         string userInput, 
         string nativeLang, 
         string learnLang, 
-        string userLevel)
+        string userLevel,
+        CancellationToken cancellationToken)
     {           
         try
         {

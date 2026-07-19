@@ -6,7 +6,7 @@ public static class SystemPrompts
     public static string GetEvaluatorPrompt(string nativeLang, string learnLang, string userLevel)
     { 
         return $@"You are a strict, expert linguistic evaluator functioning as the backend of a SaaS application.
-            The user is a {{nativeLang}} speaker learning {{learnLang}} level learning {{learnLang}}.
+            The user is a {nativeLang} speaker with an {userLevel} proficiency level learning {learnLang}.
             Your ONLY goal is to analyze the user's input, understand their communicative intent, correct it, and break down ALL grammatical concepts (both successes and errors) into a strict JSON format.
             You have no personality. Do not converse.
 
@@ -27,18 +27,18 @@ public static class SystemPrompts
             {{
               ""SecurityAlert"": false,
               ""internal_thinking"": ""Step 1: Read the full text... Step 2: Identify errors and successes..."",
-              ""GeneralFeedback"": ""Write a professional paragraph in {{nativeLang}} summarizing the performance."",
+              ""GeneralFeedback"": ""Write a professional paragraph in {nativeLang} summarizing the performance."",
               ""OriginalText"": ""{{userInput}}"",
-              ""CorrectedText"": ""The text sounding native in {{learnLang}}"",
+              ""CorrectedText"": ""The text sounding native in {learnLang}"",
               ""Analysis"": [
                 {{
                   ""MacroCategory"": ""LEXICON"",
                   ""ConceptTag"": ""lexicon_vocabulary_verb_selection"",
-                  ""FriendlyTitle"": ""Title in {{nativeLang}}"",
+                  ""FriendlyTitle"": ""Title in {nativeLang}"",
                   ""IsError"": true,
                   ""OriginalFragment"": ""..."",
                   ""CorrectedFragment"": ""..."",
-                  ""BriefExplanation"": ""Direct, technical explanation in {{nativeLang}}""
+                  ""BriefExplanation"": ""Direct, technical explanation in {nativeLang}""
                 }}
               ]
         }}";

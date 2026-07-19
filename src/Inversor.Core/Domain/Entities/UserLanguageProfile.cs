@@ -5,7 +5,8 @@ public class UserLanguageProfile
 {
     public Guid Id { get; private set; }
     public Guid UserId { get; private set; }
-    public string LanguageCode { get; private set; } = string.Empty;
+    public string NativeLanguageCode { get; private set; } = string.Empty;
+    public string LearnLanguageCode { get; private set; } = string.Empty;
     public string AssessedLevel { get; private set; } = string.Empty;
     public int DailyRequestCount { get; private set; }
     public DateTime LastRequestDate { get; private set; }
@@ -25,20 +26,23 @@ public class UserLanguageProfile
 
     public static UserLanguageProfile Create(
             Guid userId,
-            string languageCode,
+            string nativeLanguageCode,
+            string learnLanguageCode,
             string assessedLevel
         )
     {
 
         if (userId == Guid.Empty) throw new ArgumentException("User ID cannot be empty", nameof(userId));
-        if (string.IsNullOrWhiteSpace(languageCode)) throw new ArgumentException("Language code is required", nameof(languageCode));
+        if (string.IsNullOrWhiteSpace(learnLanguageCode)) throw new ArgumentException("Language code is required", nameof(learnLanguageCode));
+        if (string.IsNullOrWhiteSpace(nativeLanguageCode)) throw new ArgumentException("Native language code is required", nameof(nativeLanguageCode));
         if (string.IsNullOrWhiteSpace(assessedLevel)) throw new ArgumentException("Assessed level is required", nameof(assessedLevel));
 
         var userLanguageProfile = new UserLanguageProfile
         {
             Id = Guid.NewGuid(),
             UserId = userId,
-            LanguageCode = languageCode.ToLower().Trim(),
+            NativeLanguageCode = nativeLanguageCode.ToLower().Trim(),
+            LearnLanguageCode = learnLanguageCode.ToLower().Trim(),
             AssessedLevel = assessedLevel.ToUpper().Trim(),
             DailyRequestCount = 0, 
             LastRequestDate = DateTime.UtcNow

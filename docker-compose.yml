@@ -52,6 +52,7 @@ services:
         environment:
             - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT} 
             - ConnectionStrings__DefaultConnection=Host=inversor-db;Port=5432;Database=inversor_db;Username=${DB_USER};Password=${DB_PASSWORD}
+            - Gemini__ApiKey=${GEMINI_API_KEY}
         depends_on:
             inversor-db:
               condition: service_healthy

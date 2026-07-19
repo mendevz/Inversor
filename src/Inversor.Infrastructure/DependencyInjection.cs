@@ -1,4 +1,5 @@
 ﻿using Inversor.Core.Application.Abstractions;
+using Inversor.Infrastructure.AI.Services;
 using Inversor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,8 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
+
+        services.AddScoped<IAiEvaluatorService, GeminiEvaluatorService>();
 
         return services;
     }

@@ -22,11 +22,33 @@ public class GrammarTopic
         if (macroTagId == Guid.Empty) throw new ArgumentException("MacroTag ID cannot be empty", nameof(macroTagId));
         if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("Tag is required", nameof(tag));
         if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Title is required", nameof(title));
-        if (string.IsNullOrWhiteSpace(theoryDescription)) throw new ArgumentException("Theory description is required", nameof(theoryDescription));
         
         var grammarTopic = new GrammarTopic
         {
             Id = Guid.NewGuid(),
+            MacroTagId = macroTagId,
+            Tag = tag.ToLower().Trim(),
+            Title = title.Trim(),
+            TheoryDescription = theoryDescription.Trim()
+        };
+        return grammarTopic;
+    }
+    
+    public static GrammarTopic CreateWithId(
+            Guid id,
+            Guid macroTagId,
+            string tag,
+            string title,
+            string theoryDescription
+        )
+    {
+        if (macroTagId == Guid.Empty) throw new ArgumentException("MacroTag ID cannot be empty", nameof(macroTagId));
+        if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("Tag is required", nameof(tag));
+        if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Title is required", nameof(title));
+        
+        var grammarTopic = new GrammarTopic
+        {
+            Id = id,
             MacroTagId = macroTagId,
             Tag = tag.ToLower().Trim(),
             Title = title.Trim(),

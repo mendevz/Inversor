@@ -6,6 +6,7 @@ using Inversor.Infrastructure.AI.Prompts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Inversor.Infrastructure.AI.Services;
 
@@ -25,12 +26,13 @@ public class GeminiEvaluatorService(
         string nativeLang, 
         string learnLang, 
         string userLevel,
+        string availableTags,
         CancellationToken cancellationToken)
     {           
         try
         {
             var client = new Client(apiKey: _apiKey);
-            var systemInstruction = SystemPrompts.GetEvaluatorPrompt(nativeLang, learnLang, userLevel);
+            var systemInstruction = SystemPrompts.GetEvaluatorPrompt(nativeLang, learnLang, userLevel, availableTags);
 
             var config = new GenerateContentConfig
             {
@@ -42,13 +44,14 @@ public class GeminiEvaluatorService(
                     ]
                 },
                 Temperature = 0.1f,
-                ResponseMimeType = "application/json"
+                ResponseMimeType = "application/json",
+                MaxOutputTokens = 4000
             };
 
             logger.LogInformation("Sending request to Gemini AI for evaluation.");
 
             var response = await client.Models.GenerateContentAsync(
-                model: "gemini-3.5-flash",
+                model: "gemini-3.6-flash",
                 contents: userInput,
                 config: config
             );
@@ -58,9 +61,40 @@ public class GeminiEvaluatorService(
             if (string.IsNullOrWhiteSpace(jsonResult))
                 throw new Exception("Gemini AI retrived a empty response.");
 
-            var evaluation = JsonSerializer.Deserialize<EvaluationResponseDto>(jsonResult, _jsonOptions);
+            jsonResult = jsonResult.Trim();
+            if (jsonResult.StartsWith("```json"))
+                jsonResult = jsonResult.Replace("```json", "").Replace("```", "").Trim();
+            else if (jsonResult.StartsWith("```"))
+                jsonResult = jsonResult.Replace("```", "").Trim();
 
-            return evaluation ?? throw new Exception("Error al deserializar la respuesta de Gemini.");
+            try
+            {
+                var jsonNode = JsonNode.Parse(jsonResult) ?? throw new Exception("El nodo JSON devuelto es nulo.");
+                var evaluation = jsonNode.Deserialize<EvaluationResponseDto>(_jsonOptions);
+                return evaluation ?? throw new Exception("Error al mapear el nodo JSON al DTO.");
+            }
+            catch (JsonException jsonEx)
+            {
+                logger.LogWarning(jsonEx, "El JSON del LLM vino mal estructurado. Intentando normalización agresiva.");
+
+                var sanitizedJson = jsonResult
+                    .Replace(" '", " \"")
+                    .Replace("' ", "\" ")
+                    .Replace("('", "(\"")
+                    .Replace("')", "\")");
+                try
+                {
+                    var secondaryNode = JsonNode.Parse(sanitizedJson);
+                    var evaluation = secondaryNode?.Deserialize<EvaluationResponseDto>(_jsonOptions);
+                    if (evaluation != null) return evaluation;
+                }
+                catch
+                {
+                    logger.LogError("Fallo absoluto al intentar reparar el payload del LLM. Raw JSON: {Raw}", jsonResult);
+                }
+
+                throw new Exception("La IA devolvió un formato de datos incompatible con el sistema.", jsonEx);
+            }
         }
         catch (Exception ex)
         {

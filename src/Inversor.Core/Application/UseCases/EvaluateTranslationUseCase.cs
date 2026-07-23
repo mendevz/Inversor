@@ -32,11 +32,18 @@ public class EvaluateTranslationUseCase(
 
         logger.LogInformation("Calling AI evaluator. Assessing level: {Level}", profile.AssessedLevel);
 
+        var validTags = await dbContext.GrammarTopics
+            .Select(g => g.Tag)
+            .ToListAsync(cancellationToken);
+
+        var availableTagsString = string.Join(", ", validTags);
+
         var aiResult = await aiService.EvaluateTextAsync(
             userInput: request.Text,
             nativeLang: profile.NativeLanguageCode,
             learnLang: profile.LearnLanguageCode,
             userLevel: profile.AssessedLevel,
+            availableTags: availableTagsString,
             cancellationToken: cancellationToken);
 
         if (aiResult.SecurityAlert)
@@ -60,7 +67,6 @@ public class EvaluateTranslationUseCase(
             cancellationToken);
 
         await dbContext.SaveChangesAsync(cancellationToken);
-
         logger.LogInformation("Translation evaluation completed. TranslationSubmissionId: {TranslationSubmissionId}", submission.Id);
 
         return aiResult;
@@ -81,14 +87,19 @@ public class EvaluateTranslationUseCase(
 
             if (grammarTopic is null)
             {
-                var macro = await dbContext.MacroTags.FirstOrDefaultAsync(
-                    m => m.Tag.Equals(item.MacroCategory, StringComparison.CurrentCultureIgnoreCase), cancellationToken);
+                var fallbackTag = $"{item.MacroCategory.ToLower()}_general_error";
 
-                if (macro == null) continue;
+                logger.LogInformation("LLM invented an unknown tag: {InventedTag}. Redirecting to {FallbackTag}",
+                          topicTag, fallbackTag);
 
-                grammarTopic = GrammarTopic.Create(macro.Id, topicTag, item.FriendlyTitle, item.BriefExplanation);
-                dbContext.GrammarTopics.Add(grammarTopic);
-                await dbContext.SaveChangesAsync(cancellationToken);
+                grammarTopic = await dbContext.GrammarTopics
+                    .FirstOrDefaultAsync(g => g.Tag == fallbackTag, cancellationToken);
+
+                if (grammarTopic == null)
+                {
+                    logger.LogWarning("Critical failure: Tag {Tag} or its fallback {Fallback} not found.", topicTag, fallbackTag);
+                    continue;
+                }
             }
 
             var submitTag = SubmitTag.Create(
@@ -102,7 +113,7 @@ public class EvaluateTranslationUseCase(
             dbContext.SubmitTags.Add(submitTag);
 
             var mastery = await dbContext.TopicMasteries
-                .FirstOrDefaultAsync(t => t.UserLanguageId == profileId && t.GrammarTopicId == grammarTopic.Id, cancellationToken);
+                .FirstOrDefaultAsync(t => t.UserLanguageProfileId == profileId && t.GrammarTopicId == grammarTopic.Id, cancellationToken);
 
             if (mastery == null)
             {

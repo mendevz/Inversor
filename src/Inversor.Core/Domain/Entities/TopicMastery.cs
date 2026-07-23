@@ -3,7 +3,7 @@
 public class TopicMastery
 {
     public Guid Id { get; private set; }
-    public Guid UserLanguageId { get; private set; }
+    public Guid UserLanguageProfileId { get; private set; }
     public Guid GrammarTopicId { get; private set; }
     public decimal MasteryScore { get; private set; }
     public int TotalAttempts { get; private set; }
@@ -12,7 +12,7 @@ public class TopicMastery
     public decimal EasinessFactor { get; private set; } 
     public DateTime NextReviewDate { get; private set; }
 
-    public UserLanguageProfile UserLanguage { get; private set; } = null!;
+    public UserLanguageProfile UserLanguageProfile { get; private set; } = null!;
     public GrammarTopic GrammarTopic { get; private set; } = null!;
 
     private TopicMastery() { }
@@ -27,7 +27,7 @@ public class TopicMastery
         var topicMastery = new TopicMastery
         {
             Id = Guid.NewGuid(),
-            UserLanguageId = userLanguageId,
+            UserLanguageProfileId = userLanguageId,
             GrammarTopicId = grammarTopicId,
             MasteryScore = 0.0m,
             TotalAttempts = 0,

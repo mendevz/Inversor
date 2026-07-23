@@ -11,6 +11,7 @@ public class UserLanguageProfileConfiguration : IEntityTypeConfiguration<UserLan
     {
         builder.HasKey(p => p.Id);
 
+        builder.Property(p => p.NativeLanguageCode).HasMaxLength(10).IsRequired();
         builder.Property(p => p.LearnLanguageCode).HasMaxLength(10).IsRequired();
         builder.Property(p => p.AssessedLevel).HasMaxLength(5).IsRequired();
 

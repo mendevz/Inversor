@@ -4,5 +4,10 @@ namespace Inversor.Core.Application.Abstractions;
 
 public interface IAiEvaluatorService
 {
-    Task<EvaluationResponseDto> EvaluateTextAsync(string userInput, string nativeLang, string learnLang, string userLevel, CancellationToken cancellationToken);
+    Task<EvaluationResponseDto> EvaluateTextAsync(
+        string userInput, 
+        string nativeLang, 
+        string learnLang, 
+        string userLevel,
+        string availableTags,CancellationToken cancellationToken);
 }

@@ -14,9 +14,9 @@ public class TopicMasteryConfiguration : IEntityTypeConfiguration<TopicMastery>
         builder.Property(t => t.MasteryScore).HasPrecision(5, 4);
         builder.Property(t => t.EasinessFactor).HasPrecision(5, 4);
 
-        builder.HasOne(t => t.UserLanguage)
+        builder.HasOne(t => t.UserLanguageProfile)
                .WithMany(p => p.TopicMasteries)
-               .HasForeignKey(t => t.UserLanguageId)
+               .HasForeignKey(t => t.UserLanguageProfileId)
                .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(t => t.GrammarTopic)

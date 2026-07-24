@@ -2,7 +2,7 @@
 
 namespace Inversor.Core.Application.DTOs.Request;
 
-public class EvaluateTextRequest
+public class EvaluateTranslationRequest
 {
     public Guid UserLanguageProfileId { get; set; }
     public string Text { get; set; } = string.Empty;

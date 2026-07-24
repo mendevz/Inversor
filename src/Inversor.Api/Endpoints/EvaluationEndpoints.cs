@@ -10,14 +10,27 @@ public static class EvaluationEndpoints
         var group = app.MapGroup("/api/evaluations").WithTags("Evaluations");
 
         group.MapPost("/", async (
-            EvaluateTextRequest request,
+            EvaluateTranslationRequest request,
             EvaluateTranslationUseCase useCase,
             CancellationToken ct) =>
         {
             var result = await useCase.ExecuteAsync(request, ct);
-            return Results.Ok(result);
+            return Results.Accepted($"/api/evaluations/{result.SubmissionId}", result);
         })
         .WithName("EvaluateTranslationText")
-        .WithSummary("Evaluates a text, returns grammatical feedback, and updates the SRS engine.");
+        .WithSummary("Enqueues a text evaluation request asynchronously.");
+
+
+        // GET /api/evaluations/{id} -> Fallback endpoint to check status or recover results
+        group.MapGet("/{id:guid}", async (
+            Guid id,
+            GetTranslationSubmissionStatusUseCase useCase,
+            CancellationToken ct) =>
+        {
+            var result = await useCase.ExecuteAsync(id, ct);
+            return Results.Ok(result);
+        })
+        .WithName("GetEvaluationStatus")
+        .WithSummary("Gets the current processing status and results of a translation submission.");
     }
 }

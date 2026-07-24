@@ -46,7 +46,7 @@ public class TranslationSubmission
 
     public void MarkAsProcessing()
     {
-        if (Status != SubmissionStatus.Pending)
+        if (Status == SubmissionStatus.Completed || Status == SubmissionStatus.Processing)
         {
             throw new InvalidOperationException($"A request cannot be marked as processing while in status '{Status}'.");
         }

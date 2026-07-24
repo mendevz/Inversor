@@ -6,6 +6,8 @@ using Inversor.Infrastructure.AI.Prompts;
 using Inversor.Infrastructure.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Retry;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -17,6 +19,31 @@ public class GeminiEvaluatorService(
 {
 
     private readonly GeminiOptions _options = geminiOptions.Value;
+
+    private readonly ResiliencePipeline _resiliencePipeline = new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions
+            {
+                // We target transient failures: 503 Service Unavailable, 429 Too Many Requests, high demand, timeouts.
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(ex =>
+                    ex.Message.Contains("high demand", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("429") ||
+                    ex.Message.Contains("503") ||
+                    ex.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase)),
+
+                Delay = TimeSpan.FromSeconds(geminiOptions.Value.DelaySeconds),
+                MaxRetryAttempts = geminiOptions.Value.MaxRetries,
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                OnRetry = args =>
+                {
+                    logger.LogWarning(args.Outcome.Exception,
+                        "Gemini API transient failure. Retrying... Attempt {AttemptNumber} of {MaxRetries} after {Delay}ms",
+                        args.AttemptNumber + 1, geminiOptions.Value.MaxRetries, args.RetryDelay.TotalMilliseconds);
+
+                    return default;
+                }
+            })
+            .Build();
 
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -52,11 +79,15 @@ public class GeminiEvaluatorService(
 
             logger.LogInformation("Sending request to Gemini AI for evaluation.");
 
-            var response = await client.Models.GenerateContentAsync(
-                model: _options.Model,
-                contents: userInput,
-                config: config
-            );
+            var response = await _resiliencePipeline.ExecuteAsync(async ct =>
+            {
+                return await client.Models.GenerateContentAsync(
+                    model: _options.Model, 
+                    contents: userInput, 
+                    config: config, 
+                    cancellationToken: ct);
+
+            }, cancellationToken);
 
             var jsonResult = response.Text;
 

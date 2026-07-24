@@ -2,6 +2,7 @@
 using Inversor.Core.Application.DTOs.AiEvaluator;
 using Inversor.Core.Application.Messages;
 using Inversor.Core.Domain.Entities;
+using Inversor.Core.Domain.Enums;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,15 @@ public class EvaluateTranslationConsumer(
             logger.LogWarning("Submission {SubmissionId} not found in database. Skipping message.", command.SubmissionId);
             return;
         }
+
+        // 2. Strict Idempotency & Concurrency Guard
+        if (submission.Status is SubmissionStatus.Completed or SubmissionStatus.Processing)
+        {
+            logger.LogInformation("Submission {SubmissionId} is in state '{Status}'. Skipping execution to prevent duplicate LLM charges.",
+                command.SubmissionId, submission.Status);
+            return;
+        }
+
 
         var profile = await dbContext.UserLanguageProfiles
             .FirstOrDefaultAsync(p => p.Id == command.UserLanguageProfileId, context.CancellationToken);
@@ -88,8 +98,6 @@ public class EvaluateTranslationConsumer(
             logger.LogError(ex, "Failed to evaluate submission {SubmissionId}.", command.SubmissionId);
             submission.MarkAsFailed(ex.Message);
             await dbContext.SaveChangesAsync(context.CancellationToken);
-            // Rethrow exception to allow MassTransit / Polly retry policies and DLQ routing
-            throw;
         }
     }
 

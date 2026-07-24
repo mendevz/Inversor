@@ -20,4 +20,10 @@ public class GeminiOptions
 
     [Range(100, 8192, ErrorMessage = "MaxOutputTokens must be between 100 and 8192")]
     public int MaxOutputTokens { get; set; } = 4000;
+
+    [Range(1, 10, ErrorMessage = "MaxRetries must be between 1 and 10.")]
+    public int MaxRetries { get; set; } = 2;
+
+    [Range(1.0, 10.0, ErrorMessage = "DelaySeconds must be between 1.0 and 10.0")]
+    public double DelaySeconds { get; set; } = 2.0;
 }

@@ -68,6 +68,12 @@ public static class DependencyInjection
                     h.Username(username);
                     h.Password(password);
                 });
+
+                cfg.UseMessageRetry(r =>
+                {
+                    r.Interval(2, TimeSpan.FromSeconds(30));
+                });
+
                 cfg.ConfigureEndpoints(context);
             });
         });

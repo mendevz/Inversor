@@ -1,5 +1,6 @@
 ﻿using Inversor.Core.Application.Abstractions;
 using Inversor.Core.Domain.Entities;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -19,6 +20,7 @@ public class ApplicationDbContext(
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.AddTransactionalOutboxEntities();
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 }

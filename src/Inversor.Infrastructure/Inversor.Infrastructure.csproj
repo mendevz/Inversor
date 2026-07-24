@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Google.GenAI" Version="1.14.0" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="9.1.2" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="9.1.2" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.10" />
@@ -16,6 +17,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Inversor.Core\Inversor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Persistence\Migrations\" />
   </ItemGroup>
 
 </Project>

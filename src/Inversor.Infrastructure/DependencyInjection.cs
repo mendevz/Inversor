@@ -46,6 +46,13 @@ public static class DependencyInjection
         // MassTransit configuration with RabbitMQ
         services.AddMassTransit(x =>
         {
+
+            x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+            {
+                o.UsePostgres();
+                o.UseBusOutbox();
+            });
+
             configureMassTransit?.Invoke(x);
 
             x.UsingRabbitMq((context, cfg) =>

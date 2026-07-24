@@ -38,7 +38,6 @@ public class EvaluateTranslationUseCase(
             originalInput: request.Text);
 
         dbContext.TranslationSubmissions.Add(submission);
-        await dbContext.SaveChangesAsync(cancellationToken);
 
         var command = new EvaluateTranslationCommand(
             SubmissionId: submission.Id,
@@ -48,6 +47,9 @@ public class EvaluateTranslationUseCase(
         );
 
         await publishEndpoint.Publish(command, cancellationToken);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
         logger.LogInformation("Enqueued translation submission {SubmissionId} to RabbitMQ.", submission.Id);
 
         return new EvaluateTranslationResponseDto(

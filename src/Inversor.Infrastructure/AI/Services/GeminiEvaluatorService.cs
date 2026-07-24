@@ -3,8 +3,9 @@ using Google.GenAI.Types;
 using Inversor.Core.Application.Abstractions;
 using Inversor.Core.Application.DTOs.AiEvaluator;
 using Inversor.Infrastructure.AI.Prompts;
-using Microsoft.Extensions.Configuration;
+using Inversor.Infrastructure.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -12,9 +13,10 @@ namespace Inversor.Infrastructure.AI.Services;
 
 public class GeminiEvaluatorService(
     ILogger<GeminiEvaluatorService> logger,
-    IConfiguration configuration) : IAiEvaluatorService
+    IOptions<GeminiOptions> geminiOptions) : IAiEvaluatorService
 {
-    private readonly string _apiKey = configuration["Gemini:ApiKey"] ?? string.Empty;
+
+    private readonly GeminiOptions _options = geminiOptions.Value;
 
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -31,7 +33,7 @@ public class GeminiEvaluatorService(
     {           
         try
         {
-            var client = new Client(apiKey: _apiKey);
+            var client = new Client(apiKey: _options.ApiKey);
             var systemInstruction = SystemPrompts.GetEvaluatorPrompt(nativeLang, learnLang, userLevel, availableTags);
 
             var config = new GenerateContentConfig
@@ -43,15 +45,15 @@ public class GeminiEvaluatorService(
                         new Part { Text = systemInstruction }
                     ]
                 },
-                Temperature = 0.1f,
+                Temperature = _options.Temperature,
                 ResponseMimeType = "application/json",
-                MaxOutputTokens = 4000
+                MaxOutputTokens = _options.MaxOutputTokens
             };
 
             logger.LogInformation("Sending request to Gemini AI for evaluation.");
 
             var response = await client.Models.GenerateContentAsync(
-                model: "gemini-3.6-flash",
+                model: _options.Model,
                 contents: userInput,
                 config: config
             );

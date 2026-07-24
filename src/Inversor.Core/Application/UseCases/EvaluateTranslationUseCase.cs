@@ -52,11 +52,13 @@ public class EvaluateTranslationUseCase(
         }
 
         var submission = TranslationSubmission.Create(
-            userLanguageId: profile.Id,
+            userLanguageProfileId: profile.Id,
             mode: request.Mode,
-            originalInput: request.Text,
-            correctedOutput: aiResult.CorrectedText ?? string.Empty,
-            generalFeedback: aiResult.GeneralFeedback ?? string.Empty);
+            originalInput: request.Text);
+
+        //,
+        //    correctedOutput: aiResult.CorrectedText ?? string.Empty,
+        //    generalFeedback: aiResult.GeneralFeedback ?? string.Empty
 
         dbContext.TranslationSubmissions.Add(submission);
 

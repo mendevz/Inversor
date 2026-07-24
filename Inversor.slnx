@@ -5,4 +5,5 @@
   <Project Path="src/Inversor.Api/Inversor.Api.csproj" />
   <Project Path="src/Inversor.Core/Inversor.Core.csproj" />
   <Project Path="src/Inversor.Infrastructure/Inversor.Infrastructure.csproj" />
+  <Project Path="src/Inversor.Worker/Inversor.Worker.csproj" Id="32788165-cbdd-442b-a5e4-c842a6e40a52" />
 </Solution>

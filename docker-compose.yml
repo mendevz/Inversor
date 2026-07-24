@@ -1,5 +1,25 @@
 services:
     # ==============================
+    # Message Broker (RabbitMQ)
+    # ==============================
+    inversor-rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: inversor_rabbitmq
+        restart: unless-stopped
+        ports:
+            - "5672:5672"    
+            - "15672:15672"  
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            - inversor-network
+    # ==============================
     # DataBase PostgreSQL
     # ==============================
     inversor-db:
@@ -53,8 +73,13 @@ services:
             - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT} 
             - ConnectionStrings__DefaultConnection=Host=inversor-db;Port=5432;Database=inversor_db;Username=${DB_USER};Password=${DB_PASSWORD}
             - Gemini__ApiKey=${GEMINI_API_KEY}
+            - RabbitMQ__Host=inversor-rabbitmq
+            - RabbitMQ__Username=${RABBITMQ_USER}
+            - RabbitMQ__Password=${RABBITMQ_PASS}
         depends_on:
             inversor-db:
+              condition: service_healthy
+            inversor-rabbitmq:
               condition: service_healthy
             inversor-migrator:
               condition: service_completed_successfully

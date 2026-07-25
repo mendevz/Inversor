@@ -113,6 +113,14 @@ public static class DependencyInjection
                     })
                     .AddSource("MassTransit")
                     .AddOtlpExporter();
+            }).WithMetrics(metrics =>
+            {
+                metrics
+                    .AddMeter("Microsoft.AspNetCore.Hosting")        // Métricas HTTP (RPS, latencias, peticiones activas)
+                    .AddMeter("Microsoft.AspNetCore.Server.Kestrel") // Métricas del servidor web local
+                    .AddMeter("System.Net.Http")                     // Métricas salientes hacia la IA de Gemini
+                    .AddMeter("MassTransit")                         // Métricas de consumo y publicación en RabbitMQ
+                    .AddOtlpExporter();
             });
 
         // -- Configure logging --

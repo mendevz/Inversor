@@ -2,6 +2,9 @@
 
 namespace Inversor.Core.Application.Abstractions;
 
+/// <summary>
+/// Send text to be evaluate through an LLM
+/// </summary>
 public interface IAiEvaluatorService
 {
     Task<EvaluationResponseDto> EvaluateTextAsync(

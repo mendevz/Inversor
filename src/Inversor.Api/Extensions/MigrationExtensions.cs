@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Inversor.Api.Extensions;
 
+/// <summary>
+/// Database Migrator Extensions
+/// apply migrations whenever there are missing pending 
+/// </summary>
 public static class MigrationExtensions
 {
     public static async Task ApplyProjectMigrationsAsync(this WebApplication app)

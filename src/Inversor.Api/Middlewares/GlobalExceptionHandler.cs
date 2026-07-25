@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Inversor.Api.Middlewares;
 
+/// <summary>
+/// Global error manage
+/// </summary>
+/// <param name="logger"></param>
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(

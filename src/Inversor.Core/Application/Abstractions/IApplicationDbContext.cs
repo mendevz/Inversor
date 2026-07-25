@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 
 namespace Inversor.Core.Application.Abstractions;
+/// <summary>
+/// Database abstraction
+/// </summary>
 public interface IApplicationDbContext
 {
     DbSet<User> Users { get; }

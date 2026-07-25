@@ -6,6 +6,10 @@ using System.Reflection;
 
 namespace Inversor.Infrastructure.Persistence;
 
+/// <summary>
+/// Database implementation
+/// </summary>
+/// <param name="options"></param>
 public class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
 {

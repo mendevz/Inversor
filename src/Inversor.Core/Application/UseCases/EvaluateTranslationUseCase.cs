@@ -7,9 +7,16 @@ using Inversor.Core.Domain.Exceptions;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace Inversor.Core.Application.UseCases;
 
+/// <summary>
+/// The main feature of the whole project
+/// </summary>
+/// <param name="dbContext"></param>
+/// <param name="publishEndpoint"></param>
+/// <param name="logger"></param>
 public class EvaluateTranslationUseCase(
     IApplicationDbContext dbContext,
     IPublishEndpoint publishEndpoint,
@@ -39,12 +46,25 @@ public class EvaluateTranslationUseCase(
 
         dbContext.TranslationSubmissions.Add(submission);
 
+        // --- Set bidirectional tracing  ---
+        var currentActivity = Activity.Current;
+
+        if (currentActivity != null)
+        {
+            submission.SetTraceId(currentActivity.TraceId.ToString());
+            currentActivity.SetTag("submission.id", submission.Id);
+            currentActivity.SetTag("submission.mode", submission.Mode.ToString());
+            currentActivity.SetTag("user.profile.id", profile.Id);
+        }
+
         var command = new EvaluateTranslationCommand(
             SubmissionId: submission.Id,
             UserLanguageProfileId: profile.Id,
             Mode: request.Mode,
             Text: request.Text
         );
+
+        // ----------------------------------
 
         await publishEndpoint.Publish(command, cancellationToken);
 

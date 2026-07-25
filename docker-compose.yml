@@ -77,6 +77,8 @@ services:
             - RabbitMQ__Host=inversor-rabbitmq
             - RabbitMQ__Username=${RABBITMQ_USER}
             - RabbitMQ__Password=${RABBITMQ_PASS}
+            - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+            - OTEL_SERVICE_NAME=Inversor.Api
         depends_on:
             inversor-db:
               condition: service_healthy
@@ -102,6 +104,8 @@ services:
             - RabbitMQ__Password=${RABBITMQ_PASS}
             - Gemini__ApiKey=${GEMINI_API_KEY}
             - Gemini__Model=${GEMINI_MODEL}
+            - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+            - OTEL_SERVICE_NAME=Inversor.Worker
         depends_on:
             inversor-db:
               condition: service_healthy
@@ -111,6 +115,21 @@ services:
               condition: service_completed_successfully
         networks:
           - inversor-network
+
+    # ==============================
+    # Aspire Dashboard (Observability)
+    # ==============================
+    aspire-dashboard:
+        image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+        container_name: aspire_dashboard
+        restart: unless-stopped
+        ports:
+            - "18888:18888"
+            - "18889:18889"
+        environment:
+            - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true 
+        networks:
+            - inversor-network
             
 volumes:
     inversor_pgdata:

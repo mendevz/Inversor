@@ -53,6 +53,6 @@
    - **Idempotency:** Consumers MUST verify entity state before processing to prevent duplicate LLM calls or charges.
    - **Transactional Outbox:** Database mutations and message dispatch MUST be atomic.
 
-5. **Code Style & Agent Rules (NO VIBECODING):**
+<!-- 5. **Code Style & Agent Rules (NO VIBECODING):**
    - **Language:** All code comments, documentation, and XML docstrings MUST be in English.
-   - **Agent Execution:** AI agents MUST NEVER modify or write files directly on the system. All code blocks must be provided in chat for manual inspection and implementation.
+   - **Agent Execution:** AI agents MUST NEVER modify or write files directly on the system. All code blocks must be provided in chat for manual inspection and implementation. -->

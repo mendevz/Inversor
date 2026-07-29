@@ -8,6 +8,17 @@ using Inversor.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.SetIsOriginAllowed(_ => true)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddApplication();
 
 builder.Services.AddInfrastructure(builder.Configuration, x =>
@@ -22,6 +33,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
+
+app.UseCors();
 
 if (args.Contains("--only-migrate"))
 {

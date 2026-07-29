@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+    :root {
+        color-scheme: dark;
+    }
+
+    /* Modo Claro (iOS / GitHub Light) */
+    body {
+        @apply bg-[#f6f8fa] text-neutral-900 antialiased transition-colors duration-200;
+    }
+
+    /* Modo Oscuro (iOS / GitHub Dark) */
+    html.dark body {
+        /* #010409 es el negro suavizado de GitHub Mobile */
+        @apply bg-[#010409] text-neutral-100 antialiased;
+    }
+}

@@ -27,7 +27,7 @@ public class EvaluateTranslationConsumer(
             return;
         }
 
-        // 2. Strict Idempotency & Concurrency Guard
+        // --- Strict Idempotency & Concurrency Guard ---
         if (submission.Status is SubmissionStatus.Completed or SubmissionStatus.Processing)
         {
             logger.LogInformation("Submission {SubmissionId} is in state '{Status}'. Skipping execution to prevent duplicate LLM charges.",
@@ -90,6 +90,18 @@ public class EvaluateTranslationConsumer(
                 generalFeedback: aiResult.GeneralFeedback ?? string.Empty
             );
 
+            var evaluationCompleted = new EvaluationCompletedEvent(
+               SubmissionId: submission.Id,
+               UserLanguageProfileId: submission.UserLanguageProfileId,
+               Status: submission.Status,
+               CorrectedOutput: submission.CorrectedOutput,
+               GeneralFeedback: submission.GeneralFeedback,
+               FailureReason: null,
+               SignalRConnectionId: null
+           );
+
+            await context.Publish(evaluationCompleted, context.CancellationToken);
+
             await dbContext.SaveChangesAsync(context.CancellationToken);
             logger.LogInformation("Successfully completed evaluation submission {SubmissionId}.", command.SubmissionId);
         }
@@ -97,6 +109,17 @@ public class EvaluateTranslationConsumer(
         {
             logger.LogError(ex, "Failed to evaluate submission {SubmissionId}.", command.SubmissionId);
             submission.MarkAsFailed(ex.Message);
+
+            await context.Publish(new EvaluationCompletedEvent(
+                SubmissionId: submission.Id,
+                UserLanguageProfileId: submission.UserLanguageProfileId,
+                Status: submission.Status,
+                CorrectedOutput: null,
+                GeneralFeedback: null,
+                FailureReason: submission.FailureReason,
+                SignalRConnectionId: null
+            ), context.CancellationToken);
+
             await dbContext.SaveChangesAsync(context.CancellationToken);
         }
     }

@@ -1,5 +1,7 @@
+using Inversor.Api.Consumers;
 using Inversor.Api.Endpoints;
 using Inversor.Api.Extensions;
+using Inversor.Api.Hubs;
 using Inversor.Api.Middlewares;
 using Inversor.Core;
 using Inversor.Infrastructure;
@@ -7,8 +9,13 @@ using Inversor.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddInfrastructure(builder.Configuration, x =>
+{
+    x.AddConsumer<EvaluationCompletedConsumer>();
+});
+
+builder.Services.AddSignalR();
 builder.Services.AddOpenApi();
 
 builder.Services.AddProblemDetails();
@@ -34,6 +41,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapEvaluationEndpoints();
+
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.UseHttpsRedirection();
 
